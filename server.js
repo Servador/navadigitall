@@ -333,11 +333,12 @@ app.post("/api/admin/orders/:id/status", verifyToken, (req, res) => {
 
 // ✅ Update produk
 app.put("/api/admin/product/:id", verifyToken, (req, res) => {
-  const { name, category, image, stock } = req.body;
+  const { name, category, image, stock, description } = req.body;
   db.prepare(`
-    UPDATE products SET name=?, category=?, image=?, stock=? 
+    UPDATE products 
+    SET name=?, category=?, image=?, stock=?, description=?
     WHERE id=?
-  `).run(name, category, image, stock, req.params.id);
+  `).run(name, category, image, stock, description, req.params.id);
   res.json({ success: true });
 });
 
