@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS products (
   name TEXT,
   category TEXT,
   image TEXT,
+  description TEXT DEFAULT '',
   stock INTEGER DEFAULT 0
 );
 
