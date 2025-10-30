@@ -32,18 +32,26 @@ if (!fs.existsSync(DB_FILE)) {
 
 const db = new Database(DB_FILE);
 console.log("✅ Database Connected:", DB_FILE);
-// ================================================
-// ✅ Pastikan kolom "description" ada di product_variants
-// ================================================
+db.pragma("foreign_keys = ON");
+// =========================================================
+// 🧩 Pastikan tabel product_variants ada kolom "description"
+// =========================================================
 try {
-  const columns = db.prepare("PRAGMA table_info(product_variants)").all();
-  const hasDescription = columns.some(c => c.name === "description");
-  if (!hasDescription) {
-    console.log("🛠 Menambahkan kolom 'description' ke product_variants...");
-    db.prepare("ALTER TABLE product_variants ADD COLUMN description TEXT DEFAULT ''").run();
-    console.log("✅ Kolom 'description' berhasil ditambahkan!");
+  // Cek apakah tabel product_variants sudah ada
+  const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='product_variants'").get();
+  
+  if (tables) {
+    const columns = db.prepare("PRAGMA table_info(product_variants)").all();
+    const hasDescription = columns.some(c => c.name === "description");
+    if (!hasDescription) {
+      console.log("🛠 Menambahkan kolom 'description' ke product_variants...");
+      db.prepare("ALTER TABLE product_variants ADD COLUMN description TEXT DEFAULT ''").run();
+      console.log("✅ Kolom 'description' berhasil ditambahkan!");
+    } else {
+      console.log("✅ Kolom 'description' sudah ada, skip alter table.");
+    }
   } else {
-    console.log("✅ Kolom 'description' sudah ada, skip alter table.");
+    console.log("ℹ️ Tabel product_variants belum ada, akan dibuat nanti saat CREATE TABLE.");
   }
 } catch (err) {
   console.error("❌ Gagal memastikan kolom description:", err.message);
