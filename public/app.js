@@ -221,13 +221,62 @@ function showGuide() {
   document.body.appendChild(popup);
 }
 
-// === SEARCH PRODUK ===
-document.getElementById("searchBtn").addEventListener("click", async () => {
-  const keyword = document.getElementById("searchInput").value.toLowerCase();
-  const res = await fetch("/api/products");
-  const data = await res.json();
-  const filtered = data.filter(p => p.name.toLowerCase().includes(keyword));
-  renderProducts(filtered);
+// === SEARCH PRODUK (dengan animasi loading & fade-in) ===
+const searchBtn = document.getElementById("searchBtn");
+const searchInput = document.getElementById("searchInput");
+const grid = document.getElementById("productGrid");
+
+searchBtn.addEventListener("click", async () => {
+  const keyword = searchInput.value.toLowerCase().trim();
+  if (!keyword) return;
+
+  // ✅ tampilkan animasi loading
+  grid.innerHTML = `
+    <div style="text-align:center; margin-top:40px;">
+      <div class="loader"></div>
+      <p style="color:#666; margin-top:8px;">Mencari produk "<b>${keyword}</b>"...</p>
+    </div>
+  `;
+
+  try {
+    const res = await fetch("/api/products");
+    const data = await res.json();
+
+    // Filter berdasarkan nama & varian
+    const filtered = data.filter(p =>
+      p.name.toLowerCase().includes(keyword) ||
+      (p.variants || []).some(v => v.title.toLowerCase().includes(keyword))
+    );
+
+    await new Promise(r => setTimeout(r, 600)); // efek loading halus
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `
+        <p style="text-align:center;color:#999;margin-top:40px;">
+          ❌ Tidak ditemukan produk untuk "<b>${keyword}</b>"
+        </p>
+      `;
+    } else {
+      renderProducts(filtered);
+
+      // ✅ Efek fade-in saat hasil muncul
+      grid.classList.remove("fade-in");
+      void grid.offsetWidth; // reset animasi
+      grid.classList.add("fade-in");
+    }
+  } catch (err) {
+    console.error(err);
+    grid.innerHTML = `
+      <p style="text-align:center;color:red;margin-top:40px;">
+        ⚠️ Terjadi kesalahan koneksi server.
+      </p>
+    `;
+  }
+});
+
+// Tekan ENTER langsung cari
+searchInput.addEventListener("keypress", e => {
+  if (e.key === "Enter") searchBtn.click();
 });
 
 // === FILTER KATEGORI ===
