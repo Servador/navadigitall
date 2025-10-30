@@ -21,10 +21,17 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 // ✅ Auto create db folder & db file
-const dbFolder = path.join(__dirname, "db");
-if (!fs.existsSync(dbFolder)) fs.mkdirSync(dbFolder);
-
 const DB_FILE = path.join(dbFolder, "nava.db");
+
+// 🧹 Hapus DB lama biar Railway bikin ulang
+try {
+  fs.unlinkSync(DB_FILE);
+  console.log("🧹 File nava.db dihapus agar dibuat ulang di Railway");
+} catch (e) {
+  console.log("⚠️ Tidak ada file nava.db untuk dihapus:", e.message);
+}
+
+// Auto create file baru kalau belum ada
 if (!fs.existsSync(DB_FILE)) {
   console.log("📌 Generating new SQLite DB file");
   fs.writeFileSync(DB_FILE, "");
@@ -32,6 +39,7 @@ if (!fs.existsSync(DB_FILE)) {
 
 const db = new Database(DB_FILE);
 console.log("✅ Database Connected:", DB_FILE);
+
 db.pragma("foreign_keys = ON");
 // =========================================================
 // 🧩 Pastikan tabel product_variants ada kolom "description"
