@@ -34,15 +34,14 @@ const db = new Database(DB_FILE);
 console.log("✅ Database Connected:", DB_FILE);
 db.pragma("foreign_keys = ON");
 
-// ✅ Create Tables
 db.exec(`
 CREATE TABLE IF NOT EXISTS products (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT,
   category TEXT,
   image TEXT,
-  stock INTEGER DEFAULT 0
   description TEXT DEFAULT '',
+  stock INTEGER DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS product_variants (
