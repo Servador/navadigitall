@@ -21,6 +21,9 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 // ✅ Auto create db folder & db file
+const dbFolder = path.join(__dirname, "db");
+if (!fs.existsSync(dbFolder)) fs.mkdirSync(dbFolder);
+
 const DB_FILE = path.join(dbFolder, "nava.db");
 
 // 🧹 Hapus DB lama biar Railway bikin ulang
