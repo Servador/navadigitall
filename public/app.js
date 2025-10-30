@@ -24,15 +24,6 @@ function renderProducts(products) {
   Stock: ${p.stock ?? 0}
 </p>
 
-<p class="${p.stock > 0 ? '' : 'stock-empty'}">
-  Stock: ${p.stock ?? 0}
-</p>
-
-<!-- ✨ Tambahin deskripsi di sini -->
-<p class="desc" id="desc-${p.id}" style="margin-top:8px;font-size:13px;color:#888;">
-  ${p.description || "Deskripsi akan ditambahkan di sini..."}
-</p>
-
 <div class="price-buy">
   <button 
     ${p.stock > 0 ? `onclick='openPackagePopup(${JSON.stringify(p)})'` : 'disabled'}
@@ -83,11 +74,6 @@ function openPackagePopup(product) {
         );
         btn.classList.add("active");
         selectedVariant = pkg;
-        // ✅ Scroll ke deskripsi produk
-document.getElementById(`desc-${product.id}`)?.scrollIntoView({
-  behavior: "smooth",
-  block: "center"
-});
       };
     }
 
