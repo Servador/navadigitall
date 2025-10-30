@@ -234,14 +234,31 @@ app.post("/api/login", (req, res) => {
 
 // ✅ Get Products with Variants
 app.get("/api/products", (req, res) => {
-  const products = db.prepare("SELECT * FROM products").all();
-  const variants = db.prepare("SELECT * FROM product_variants").all();
+  const sql = `
+    SELECT p.*,
+      json_group_array(
+        json_object(
+          'id', v.id,
+          'title', v.title,
+          'price', v.price,
+          'stock', v.stock,
+          'description', v.description
+        )
+      ) AS variants
+    FROM products p
+    LEFT JOIN product_variants v ON p.id = v.product_id
+    GROUP BY p.id
+  `;
 
-  const map = {};
-  products.forEach(p => (map[p.id] = { ...p, variants: [] }));
-  variants.forEach(v => map[v.product_id]?.variants.push(v));
+  const rows = db.prepare(sql).all();
 
-  res.json(Object.values(map));
+  rows.forEach(r => {
+    r.variants = JSON.parse(r.variants || "[]");
+    const total = r.variants.reduce((sum, v) => sum + (v.stock ?? 0), 0);
+    r.stock = total;
+  });
+
+  res.json(rows);
 });
 
 // Replace endpoint POST /api/orders menjadi ini:
@@ -310,14 +327,31 @@ app.get("/", (_, res) => {
 
 // ✅ Ambil semua produk + varian (PROTECTED)
 app.get("/api/admin/products", verifyToken, (req, res) => {
-  const products = db.prepare("SELECT * FROM products").all();
-  const variants = db.prepare("SELECT * FROM product_variants").all();
+  const sql = `
+    SELECT p.*,
+      json_group_array(
+        json_object(
+          'id', v.id,
+          'title', v.title,
+          'price', v.price,
+          'stock', v.stock,
+          'description', v.description
+        )
+      ) AS variants
+    FROM products p
+    LEFT JOIN product_variants v ON p.id = v.product_id
+    GROUP BY p.id
+  `;
 
-  const map = {};
-  products.forEach(p => map[p.id] = { ...p, variants: [] });
-  variants.forEach(v => map[v.product_id]?.variants.push(v));
+  const rows = db.prepare(sql).all();
 
-  res.json(Object.values(map));
+  rows.forEach(r => {
+    r.variants = JSON.parse(r.variants || "[]");
+    const total = r.variants.reduce((sum, v) => sum + (v.stock ?? 0), 0);
+    r.stock = total;
+  });
+
+  res.json(rows);
 });
 
 // ✅ Ambil semua pesanan (PROTECTED)
