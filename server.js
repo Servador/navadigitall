@@ -98,25 +98,25 @@ const products = [
   { name: "WeTV", category: "Streaming", image: "img/wetv.png" },
   { name: "YouTube Premium", category: "Streaming", image: "img/yt.png" },
   { name: "IQIYI", category: "Streaming", image: "img/iqiyi.png" },
-  { name: "Bstation", category: "Streaming", image: "img/bstation.png" },
-  { name: "Loklok", category: "Streaming", image: "img/loklok.png" },
+  { name: "Bstation", category: "Streaming", image: "img/bstation.jpeg" },
+  { name: "Loklok", category: "Streaming", image: "img/loklok.jpeg" },
 
   // 🧠 AI & Tools
-  { name: "ChatGPT", category: "AI Tools", image: "img/chatgpt.png" },
+  { name: "ChatGPT", category: "AI Tools", image: "img/chatgpts.png" },
   { name: "Gemini", category: "AI Tools", image: "img/gemini.png" },
   { name: "Perplexity", category: "AI Tools", image: "img/perplexity.png" },
   { name: "Remini", category: "AI Tools", image: "img/remini.png" },
-  { name: "Dazzcam", category: "AI Tools", image: "img/dazzcam.png" },
-  { name: "PicsArt", category: "AI Tools", image: "img/picsart.png" },
+  { name: "Dazzcam", category: "AI Tools", image: "img/dazzcam.jpeg" },
+  { name: "PicsArt", category: "AI Tools", image: "img/picsart.jpeg" },
   { name: "CapCut Pro", category: "Editing", image: "img/capcut.png" },
-  { name: "Alight Motion", category: "Editing", image: "img/alight.png" },
-  { name: "Blackbox", category: "AI Tools", image: "img/blackbox.png" },
+  { name: "Alight Motion", category: "Editing", image: "img/am.jpeg" },
+  { name: "Blackbox", category: "AI Tools", image: "img/blackbox.jpeg" },
 
   // 🌐 Layanan & Tools
-  { name: "Microsoft 365", category: "Productivity", image: "img/microsoft.png" },
+  { name: "Microsoft 365", category: "Productivity", image: "img/mcs.png" },
   { name: "Zoom Pro", category: "Productivity", image: "img/zoom.png" },
-  { name: "GetContact", category: "Utility", image: "img/getcontact.png" },
-  { name: "Jasa Pembuatan Website", category: "Utility", image: "img/website.png" },
+  { name: "GetContact", category: "Utility", image: "img/gtc.png" },
+  { name: "Jasa Pembuatan Website", category: "Utility", image: "img/website.jpeg" },
   { name: "VPN Premium", category: "VPN", image: "img/vpn.png" },
 
   // 💬 Sosmed & Komunitas
@@ -125,8 +125,8 @@ const products = [
   { name: "Wink", category: "Sosmed", image: "img/wink.png" },
 
   // 🎮 Game
-  { name: "Crunchyroll", category: "Streaming", image: "img/crunchy.png" },
-  { name: "DramaBox", category: "Streaming", image: "img/dramabox.png" },
+  { name: "Crunchyroll", category: "Streaming", image: "img/crunchyroll.png" },
+  { name: "DramaBox", category: "Streaming", image: "img/drama.png" },
   { name: "Viu", category: "Streaming", image: "img/viu.png" },
 ];
 
