@@ -74,90 +74,100 @@ CREATE TABLE IF NOT EXISTS orders (
   console.log("⏳ Seeding full catalog...");
 
   // 1) Definisi produk
-  const products = [
-    // Aplikasi Premium
-    { name: "Netflix Premium", category: "Aplikasi Premium", image: "img/netflix.png" },
-    { name: "CapCut Pro", category: "Aplikasi Premium", image: "img/capcut.png" },
-    { name: "Prime Video", category: "Aplikasi Premium", image: "img/prime.png" },
-    { name: "Canva Pro", category: "Aplikasi Premium", image: "img/canva.png" },
-    { name: "Disney", category: "Aplikasi Premium", image: "img/disney.png" },
-    { name: "Vidio", category: "Aplikasi Premium", image: "img/vidio.png" },
-    { name: "Wetv", category: "Aplikasi Premium", image: "img/wetv.png" },
-    { name: "Spotify", category: "Aplikasi Premium", image: "img/spotify.png" },
-    { name: "YouTube", category: "Aplikasi Premium", image: "img/yt.png" },
-    { name: "Zoom Pro", category: "Aplikasi Premium", image: "img/zoom.png" },
-    { name: "Drama Box", category: "Aplikasi Premium", image: "img/drama.png" },
-    { name: "Gemini", category: "Aplikasi Premium", image: "img/gemini.png" },
-    { name: "CHAT GPT", category: "Aplikasi Premium", image: "img/chatgpts.png" },
-    { name: "Perplexity", category: "Aplikasi Premium", image: "img/perplexity.png" },
-    { name: "GET CONTACT", category: "Aplikasi Premium", image: "img/gtc.png" },
+const products = [
+  // 🌟 BEST SELLER
+  { name: "Netflix", category: "Streaming", image: "img/netflix.png" },
+  { name: "Vidio", category: "Streaming", image: "img/vidio.png" },
+  { name: "Canva Pro", category: "Editing", image: "img/canva.png" },
+  { name: "Spotify", category: "Streaming", image: "img/spotify.png" },
 
-    // Game
-    { name: "Diamond ML", category: "Game", image: "img/ml.png" },
-    { name: "Diamond FF", category: "Game", image: "img/ff.png" },
+  // 🎬 Streaming & Hiburan
+  { name: "Disney", category: "Streaming", image: "img/disney.png" },
+  { name: "WeTV", category: "Streaming", image: "img/wetv.png" },
+  { name: "YouTube Premium", category: "Streaming", image: "img/yt.png" },
+  { name: "IQIYI", category: "Streaming", image: "img/iqiyi.png" },
+  { name: "Bstation", category: "Streaming", image: "img/bstation.png" },
+  { name: "Loklok", category: "Streaming", image: "img/loklok.png" },
 
-    // Pulsa
-    { name: "Pulsa Telkomsel", category: "Pulsa", image: "img/telkom.png" },
-    { name: "Pulsa IM3", category: "Pulsa", image: "img/im3.png" },
-    { name: "Pulsa AXIS", category: "Pulsa", image: "img/axis.png" },
-    { name: "Pulsa XL", category: "Pulsa", image: "img/xl.png" },
-    { name: "Pulsa By.U", category: "Pulsa", image: "img/byu.png" },
+  // 🧠 AI & Tools
+  { name: "ChatGPT", category: "AI Tools", image: "img/chatgpt.png" },
+  { name: "Gemini", category: "AI Tools", image: "img/gemini.png" },
+  { name: "Perplexity", category: "AI Tools", image: "img/perplexity.png" },
+  { name: "Remini", category: "AI Tools", image: "img/remini.png" },
+  { name: "Dazzcam", category: "AI Tools", image: "img/dazzcam.png" },
+  { name: "PicsArt", category: "AI Tools", image: "img/picsart.png" },
+  { name: "CapCut Pro", category: "Editing", image: "img/capcut.png" },
+  { name: "Alight Motion", category: "Editing", image: "img/alight.png" },
+  { name: "Blackbox", category: "AI Tools", image: "img/blackbox.png" },
 
-    // Paket Data
-    { name: "Paket Data Telkomsel", category: "Paket Data", image: "img/pdtelkom.png" },
-    { name: "Paket Data IM3", category: "Paket Data", image: "img/pdim3.png" },
-    { name: "Paket Data AXIS", category: "Paket Data", image: "img/pdaxis.png" },
-    { name: "Paket Data XL", category: "Paket Data", image: "img/pdxl.png" },
-    { name: "Paket Data By.U", category: "Paket Data", image: "img/pdbyu.png" },
+  // 🌐 Layanan & Tools
+  { name: "Microsoft 365", category: "Productivity", image: "img/microsoft.png" },
+  { name: "Zoom Pro", category: "Productivity", image: "img/zoom.png" },
+  { name: "GetContact", category: "Utility", image: "img/getcontact.png" },
+  { name: "Nokos", category: "Utility", image: "img/nokos.png" },
+  { name: "Panel", category: "Utility", image: "img/panel.png" },
+  { name: "Script", category: "Utility", image: "img/script.png" },
+  { name: "Jasa Pembuatan Website", category: "Utility", image: "img/website.png" },
 
-    // Suntik Sosmed
-    { name: "Suntik Instagram", category: "Suntik Sosmed", image: "img/ig.png" },
-    { name: "Suntik Tiktok", category: "Suntik Sosmed", image: "img/tiktok.png" },
-  ];
+  // 💬 Sosmed & Komunitas
+  { name: "Instagram", category: "Sosmed", image: "img/ig.png" },
+  { name: "TikTok", category: "Sosmed", image: "img/tiktok.png" },
+  { name: "Wink", category: "Sosmed", image: "img/wink.png" },
 
-  // 2) Definisi varian (harga sementara 10000; stok 10)
-  const V = (title, price = 10000, stock = 10) => ({ title, price, stock });
+  // 🎮 Game
+  { name: "Panel Game", category: "Game", image: "img/gamepanel.png" },
+  { name: "Crunchyroll", category: "Streaming", image: "img/crunchy.png" },
+  { name: "DramaBox", category: "Streaming", image: "img/dramabox.png" },
+  { name: "Viu", category: "Streaming", image: "img/viu.png" },
+];
 
-  const variants = {
-    // Aplikasi Premium (paket standar)
-    "Netflix Premium": [V("Private 1 Bulan"), V("Semi Private 1 Bulan"), V("Sharing 1 Bulan")],
-    "CapCut Pro": [V("1 Bulan"), V("6 Bulan")],
-    "Prime Video": [V("Private 1 Bulan"), V("Semi Private 1 Bulan"), V("Sharing 1 Bulan")],
-    "Canva Pro": [V("Private 1 Bulan"), V("Semi Private 1 Bulan"), V("Sharing 1 Bulan")],
-    "Disney": [V("Private 1 Bulan"), V("Sharing 1 Bulan")],
-    "Vidio": [V("Private 1 Bulan"), V("Sharing 1 Bulan")],
-    "Wetv": [V("Private 1 Bulan"), V("Sharing 1 Bulan")],
-    "Spotify": [V("Private 1 Bulan"), V("Sharing 1 Bulan")],
-    "YouTube": [V("Premium 1 Bulan")],
-    "Zoom Pro": [V("1 Bulan"), V("6 Bulan")],
-    "Drama Box": [V("Private 1 Bulan")],
-    "Gemini": [V("Pro 1 Bulan")],
-    "CHAT GPT": [V("Plus 1 Bulan")],
-    "Perplexity": [V("Pro 1 Bulan")],
-    "GET CONTACT": [V("Premium 1 Bulan")],
+// 2) Definisi varian (harga sementara 10000; stok 10)
+const V = (title, price = 10000, stock = 10) => ({ title, price, stock });
 
-    // Game
-    "Diamond ML": [V("Top Up 86 Diamond"), V("Top Up 172 Diamond")],
-    "Diamond FF": [V("Top Up 12 Diamond"), V("Top Up 50 Diamond")],
+const variants = {
+  // Best Seller & Streaming
+  "Netflix": [V("Private 1 Bulan"), V("Semi Private 1 Bulan"), V("Sharing 1 Bulan")],
+  "Vidio": [V("Private 1 Bulan"), V("Sharing 1 Bulan")],
+  "Canva Pro": [V("1 Bulan"), V("6 Bulan")],
+  "Spotify": [V("Private 1 Bulan"), V("Sharing 1 Bulan")],
+  "Disney": [V("Private 1 Bulan"), V("Sharing 1 Bulan")],
+  "WeTV": [V("Private 1 Bulan"), V("Sharing 1 Bulan")],
+  "YouTube Premium": [V("1 Bulan"), V("6 Bulan")],
+  "IQIYI": [V("Premium 1 Bulan")],
+  "Bstation": [V("Premium 1 Bulan")],
+  "Loklok": [V("VIP 1 Bulan")],
+  "Viu": [V("VIP 1 Bulan")],
+  "DramaBox": [V("VIP 1 Bulan")],
+  "Crunchyroll": [V("Premium 1 Bulan")],
 
-    // Pulsa
-    "Pulsa Telkomsel": [V("Pulsa 25K"), V("Pulsa 50K")],
-    "Pulsa IM3": [V("Pulsa 25K"), V("Pulsa 50K")],
-    "Pulsa AXIS": [V("Pulsa 25K"), V("Pulsa 50K")],
-    "Pulsa XL": [V("Pulsa 25K"), V("Pulsa 50K")],
-    "Pulsa By.U": [V("Pulsa 25K"), V("Pulsa 50K")],
+  // AI & Tools
+  "ChatGPT": [V("Plus 1 Bulan")],
+  "Gemini": [V("Advanced 1 Bulan")],
+  "Perplexity": [V("Pro 1 Bulan")],
+  "Remini": [V("Premium 1 Bulan")],
+  "Dazzcam": [V("Pro 1 Bulan")],
+  "PicsArt": [V("Gold 1 Bulan")],
+  "Alight Motion": [V("Pro 1 Bulan")],
+  "Blackbox": [V("Developer Pro")],
+  "CapCut Pro": [V("1 Bulan"), V("6 Bulan")],
 
-    // Paket Data
-    "Paket Data Telkomsel": [V("5 GB"), V("10 GB")],
-    "Paket Data IM3": [V("5 GB"), V("10 GB")],
-    "Paket Data AXIS": [V("5 GB"), V("10 GB")],
-    "Paket Data XL": [V("5 GB"), V("10 GB")],
-    "Paket Data By.U": [V("5 GB"), V("10 GB")],
+  // Utility & Productivity
+  "Microsoft 365": [V("Personal 1 Bulan"), V("Family 1 Bulan")],
+  "Zoom Pro": [V("1 Bulan"), V("6 Bulan")],
+  "GetContact": [V("Premium 1 Bulan")],
+  "Nokos": [V("Nomor Sementara"), V("Nomor Permanen")],
+  "Panel": [V("Paket 1"), V("Paket 2"), V("Paket 3")],
+  "Script": [V("Basic"), V("Full Version")],
+  "Jasa Pembuatan Website": [V("Landing Page"), V("E-Commerce"), V("Portfolio")],
 
-    // Suntik Sosmed
-    "Suntik Instagram": [V("1000 Followers"), V("5000 Followers")],
-    "Suntik Tiktok": [V("1000 Followers"), V("5000 Followers")],
-  };
+  // Sosmed
+  "Instagram": [V("1000 Followers"), V("5000 Followers"), V("10.000 Followers")],
+  "TikTok": [V("1000 Followers"), V("5000 Followers"), V("10.000 Followers")],
+  "Wink": [V("VIP 1 Bulan")],
+
+  // Game
+  "Panel Game": [V("1 Bulan"), V("3 Bulan")],
+};
 
   // 3) Insert dalam transaksi (cepat & atomic)
   const insertProduct = db.prepare(
