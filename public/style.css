@@ -874,3 +874,26 @@ body {
 .floating-wa {
   animation: pulseWA 1.8s infinite ease-in-out;
 }
+
+#categoryBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.cat {
+  background: #111;
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 18px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.cat.active, .cat:hover {
+  background: #e3561d;
+  color: #fff;
+}
