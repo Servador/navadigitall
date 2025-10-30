@@ -81,19 +81,21 @@ function openPackagePopup(product) {
           const descBox = document.createElement("div");
           descBox.className = "desc-box";
           descBox.innerHTML = `
-            <div style="
-              margin-top:8px;
-              padding:10px;
-              border-radius:10px;
-              background:#f8f9fa;
-              border:1px solid #ddd;
-              text-align:left;">
-              <b>📜 Deskripsi Produk</b>
-              <p style="font-size:13px; margin-top:4px; color:#333;">
-                ${product.description || "Belum ada deskripsi untuk produk ini."}
-              </p>
-            </div>
-          `;
+  <div style="
+    margin-top:8px;
+    padding:10px;
+    border-radius:10px;
+    background:#f8f9fa;
+    border:1px solid #ddd;
+    text-align:left;">
+    <b>📜 Deskripsi Paket</b>
+    <p style="font-size:13px; margin-top:4px; color:#333;">
+      ${pkg.description && pkg.description.trim() !== "" 
+        ? pkg.description 
+        : "Belum ada deskripsi untuk paket ini."}
+    </p>
+  </div>
+`;
           btn.insertAdjacentElement("afterend", descBox);
 
           // scroll halus ke deskripsi
