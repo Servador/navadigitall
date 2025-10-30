@@ -85,6 +85,22 @@ function openPackagePopup(product) {
   `;
 }
 
+// === Deskripsi Produk (auto scroll) ===
+if (product.description && product.description.trim() !== "") {
+  const descBox = document.createElement("div");
+  descBox.className = "product-desc";
+  descBox.innerHTML = `
+    <h4>📝 Deskripsi Produk</h4>
+    <p style="font-size:14px;line-height:1.5;color:#333;">${product.description}</p>
+  `;
+  listContainer.appendChild(descBox);
+
+  // scroll otomatis ke bawah setelah varian dipilih
+  setTimeout(() => {
+    descBox.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 400);
+}
+
   // ✅ Tombol aksi
   const actionBox = document.createElement("div");
   actionBox.className = "popup-actions";
@@ -221,14 +237,28 @@ function showGuide() {
   document.body.appendChild(popup);
 }
 
-// === SEARCH PRODUK (dengan animasi loading & fade-in) ===
+// === SEARCH PRODUK (dengan loading, fade-in, dan auto-reset) ===
 const searchBtn = document.getElementById("searchBtn");
 const searchInput = document.getElementById("searchInput");
 const grid = document.getElementById("productGrid");
 
-searchBtn.addEventListener("click", async () => {
+async function handleSearch() {
   const keyword = searchInput.value.toLowerCase().trim();
-  if (!keyword) return;
+
+  // Jika input kosong → tampilkan semua produk
+  if (!keyword) {
+    grid.innerHTML = `
+      <div style="text-align:center;margin-top:30px;color:#666;">
+        🔄 Menampilkan semua produk...
+      </div>
+    `;
+    const res = await fetch("/api/products");
+    const data = await res.json();
+    await new Promise(r => setTimeout(r, 400));
+    renderProducts(data);
+    grid.classList.add("fade-in");
+    return;
+  }
 
   // ✅ tampilkan animasi loading
   grid.innerHTML = `
@@ -242,13 +272,12 @@ searchBtn.addEventListener("click", async () => {
     const res = await fetch("/api/products");
     const data = await res.json();
 
-    // Filter berdasarkan nama & varian
     const filtered = data.filter(p =>
       p.name.toLowerCase().includes(keyword) ||
       (p.variants || []).some(v => v.title.toLowerCase().includes(keyword))
     );
 
-    await new Promise(r => setTimeout(r, 600)); // efek loading halus
+    await new Promise(r => setTimeout(r, 500));
 
     if (filtered.length === 0) {
       grid.innerHTML = `
@@ -258,8 +287,6 @@ searchBtn.addEventListener("click", async () => {
       `;
     } else {
       renderProducts(filtered);
-
-      // ✅ Efek fade-in saat hasil muncul
       grid.classList.remove("fade-in");
       void grid.offsetWidth; // reset animasi
       grid.classList.add("fade-in");
@@ -272,11 +299,16 @@ searchBtn.addEventListener("click", async () => {
       </p>
     `;
   }
+}
+
+searchBtn.addEventListener("click", handleSearch);
+searchInput.addEventListener("keypress", e => {
+  if (e.key === "Enter") handleSearch();
 });
 
-// Tekan ENTER langsung cari
-searchInput.addEventListener("keypress", e => {
-  if (e.key === "Enter") searchBtn.click();
+// ✅ Reset otomatis kalau user hapus teks
+searchInput.addEventListener("input", () => {
+  if (searchInput.value.trim() === "") handleSearch();
 });
 
 // === FILTER KATEGORI ===

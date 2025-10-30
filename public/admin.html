@@ -169,6 +169,7 @@
     <input type="text" id="editCategory" class="input" placeholder="Kategori">
     <input type="text" id="editImage" class="input" placeholder="URL/Gambar (mis. img/netflix.png)">
     <input type="number" id="editStock" class="input" placeholder="Stok">
+    <textarea id="editDescription" class="input" rows="3" placeholder="Deskripsi Produk..." style="resize:vertical"></textarea>
 
     <div class="modal-actions">
       <button id="closeEditModal">Batal</button>
@@ -247,11 +248,11 @@ async function loadProducts() {
       <td><b>${p.id}</b></td>
       <td>${p.name}</td>
       <td>
-        <select class="select" id="cat-${p.id}">
-          ${categories.map(c => `
-            <option value="${c}" ${p.category === c ? "selected" : ""}>${c}</option>
-          `).join("")}
-        </select>
+        <<select class="select" id="cat-${p.id}">
+  ${["Streaming","Editing","AI Tools","Utility","Productivity","Sosmed","Game"].map(c =>
+    `<option value="${c}" ${p.category === c ? 'selected':''}>${c}</option>`
+  ).join("")}
+</select>
       </td>
       <td><b>${p.stock ?? 0}</b></td>
       <td>
@@ -261,6 +262,21 @@ async function loadProducts() {
         </details>
       </td>
     `;
+    tr.innerHTML += `
+  <td>
+    <div class="row-actions">
+      <button class="btn warn tiny"
+        onclick="openEditModal(this)"
+        data-id="${p.id}"
+        data-name="${escAttr(p.name)}"
+        data-category="${escAttr(p.category)}"
+        data-image="${escAttr(p.image)}"
+        data-stock="${p.stock ?? 0}"
+        data-description="${escAttr(p.description || '')}"
+      >Edit</button>
+    </div>
+  </td>
+`;
     body.appendChild(tr);
   });
 }
@@ -292,6 +308,41 @@ async function deleteVariant(id) {
   toast("Varian terhapus ❌");
   loadProducts();
 }
+
+let editingId = null;
+
+function openEditModal(btn){
+  editingId = btn.dataset.id;
+  document.getElementById("editName").value = btn.dataset.name || "";
+  document.getElementById("editCategory").value = btn.dataset.category || "";
+  document.getElementById("editImage").value = btn.dataset.image || "";
+  document.getElementById("editStock").value = btn.dataset.stock || 0;
+  document.getElementById("editDescription").value = btn.dataset.description || "";
+  document.getElementById("editProductModal").classList.remove("hidden");
+}
+
+document.getElementById("closeEditModal")?.addEventListener("click", () => {
+  document.getElementById("editProductModal").classList.add("hidden");
+});
+
+document.getElementById("saveEditProduct")?.addEventListener("click", async () => {
+  const payload = {
+    name: document.getElementById("editName").value.trim(),
+    category: document.getElementById("editCategory").value.trim(),
+    image: document.getElementById("editImage").value.trim(),
+    stock: +document.getElementById("editStock").value || 0,
+    description: document.getElementById("editDescription").value.trim() || ""
+  };
+
+  await authFetch(`/api/admin/product/${editingId}`, {
+    method: "PUT",
+    body: JSON.stringify(payload)
+  });
+
+  toast("Produk diperbarui ✅");
+  document.getElementById("editProductModal").classList.add("hidden");
+  loadProducts();
+});
 
 // ✅ Tambah Varian
 document.getElementById("addVarBtn")?.addEventListener("click", async () => {
