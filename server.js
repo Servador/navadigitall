@@ -34,40 +34,17 @@ try {
   console.log("⚠️ Tidak ada file nava.db untuk dihapus:", e.message);
 }
 
-// Auto create file baru kalau belum ada
-if (!fs.existsSync(DB_FILE)) {
-  console.log("📌 Generating new SQLite DB file");
-  fs.writeFileSync(DB_FILE, "");
-}
+// 🧱 Buat file DB baru
+console.log("📌 Membuat ulang SQLite DB file...");
+fs.writeFileSync(DB_FILE, "");
 
 const db = new Database(DB_FILE);
 console.log("✅ Database Connected:", DB_FILE);
-
 db.pragma("foreign_keys = ON");
-// =========================================================
-// 🧩 Pastikan tabel product_variants ada kolom "description"
-// =========================================================
-try {
-  // Cek apakah tabel product_variants sudah ada
-  const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='product_variants'").get();
-  
-  if (tables) {
-    const columns = db.prepare("PRAGMA table_info(product_variants)").all();
-    const hasDescription = columns.some(c => c.name === "description");
-    if (!hasDescription) {
-      console.log("🛠 Menambahkan kolom 'description' ke product_variants...");
-      db.prepare("ALTER TABLE product_variants ADD COLUMN description TEXT DEFAULT ''").run();
-      console.log("✅ Kolom 'description' berhasil ditambahkan!");
-    } else {
-      console.log("✅ Kolom 'description' sudah ada, skip alter table.");
-    }
-  } else {
-    console.log("ℹ️ Tabel product_variants belum ada, akan dibuat nanti saat CREATE TABLE.");
-  }
-} catch (err) {
-  console.error("❌ Gagal memastikan kolom description:", err.message);
-}
 
+// =========================================================
+// 🧩 Buat tabel dari nol (langsung include kolom description)
+// =========================================================
 db.exec(`
 CREATE TABLE IF NOT EXISTS products (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -84,6 +61,7 @@ CREATE TABLE IF NOT EXISTS product_variants (
   title TEXT,
   price INTEGER,
   stock INTEGER DEFAULT 0,
+  description TEXT DEFAULT '',
   FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE
 );
 
