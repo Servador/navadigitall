@@ -116,10 +116,8 @@ const products = [
   { name: "Microsoft 365", category: "Productivity", image: "img/microsoft.png" },
   { name: "Zoom Pro", category: "Productivity", image: "img/zoom.png" },
   { name: "GetContact", category: "Utility", image: "img/getcontact.png" },
-  { name: "Nokos", category: "Utility", image: "img/nokos.png" },
-  { name: "Panel", category: "Utility", image: "img/panel.png" },
-  { name: "Script", category: "Utility", image: "img/script.png" },
   { name: "Jasa Pembuatan Website", category: "Utility", image: "img/website.png" },
+  { name: "VPN Premium", category: "VPN", image: "img/vpn.png" },
 
   // 💬 Sosmed & Komunitas
   { name: "Instagram", category: "Sosmed", image: "img/ig.png" },
@@ -127,7 +125,6 @@ const products = [
   { name: "Wink", category: "Sosmed", image: "img/wink.png" },
 
   // 🎮 Game
-  { name: "Panel Game", category: "Game", image: "img/gamepanel.png" },
   { name: "Crunchyroll", category: "Streaming", image: "img/crunchy.png" },
   { name: "DramaBox", category: "Streaming", image: "img/dramabox.png" },
   { name: "Viu", category: "Streaming", image: "img/viu.png" },
@@ -167,18 +164,13 @@ const variants = {
   "Microsoft 365": [V("Personal 1 Bulan"), V("Family 1 Bulan")],
   "Zoom Pro": [V("1 Bulan"), V("6 Bulan")],
   "GetContact": [V("Premium 1 Bulan")],
-  "Nokos": [V("Nomor Sementara"), V("Nomor Permanen")],
-  "Panel": [V("Paket 1"), V("Paket 2"), V("Paket 3")],
-  "Script": [V("Basic"), V("Full Version")],
   "Jasa Pembuatan Website": [V("Landing Page"), V("E-Commerce"), V("Portfolio")],
+  "VPN": [V("Premium 1 Bulan"), V("VPN")],
 
   // Sosmed
   "Instagram": [V("1000 Followers"), V("5000 Followers"), V("10.000 Followers")],
   "TikTok": [V("1000 Followers"), V("5000 Followers"), V("10.000 Followers")],
   "Wink": [V("VIP 1 Bulan")],
-
-  // Game
-  "Panel Game": [V("1 Bulan"), V("3 Bulan")],
 };
 
   // 3) Insert dalam transaksi (cepat & atomic)
