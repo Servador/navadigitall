@@ -234,32 +234,21 @@ app.post("/api/login", (req, res) => {
 
 // ✅ Get Products with Variants
 app.get("/api/products", (req, res) => {
-  const sql = `
-    SELECT p.*,
-      json_group_array(
-        json_object(
-          'id', v.id,
-          'title', v.title,
-          'price', v.price,
-          'stock', v.stock,
-          'description', v.description
-        )
-      ) AS variants
-    FROM products p
-    LEFT JOIN product_variants v ON p.id = v.product_id
-    GROUP BY p.id
-  `;
+  const products = db.prepare("SELECT * FROM products").all();
 
-  const rows = db.prepare(sql).all();
-
-  rows.forEach(r => {
-    r.variants = JSON.parse(r.variants || "[]");
-    const total = r.variants.reduce((sum, v) => sum + (v.stock ?? 0), 0);
-    r.stock = total;
+  const result = products.map(p => {
+    const variants = db.prepare(`
+      SELECT id, title, price, stock, description
+      FROM product_variants
+      WHERE product_id = ?
+    `).all(p.id);
+    const totalStock = variants.reduce((sum, v) => sum + (v.stock ?? 0), 0);
+    return { ...p, stock: totalStock, variants };
   });
 
-  res.json(rows);
+  res.json(result);
 });
+
 
 // Replace endpoint POST /api/orders menjadi ini:
 app.post("/api/orders", (req, res) => {
@@ -327,31 +316,19 @@ app.get("/", (_, res) => {
 
 // ✅ Ambil semua produk + varian (PROTECTED)
 app.get("/api/admin/products", verifyToken, (req, res) => {
-  const sql = `
-    SELECT p.*,
-      json_group_array(
-        json_object(
-          'id', v.id,
-          'title', v.title,
-          'price', v.price,
-          'stock', v.stock,
-          'description', v.description
-        )
-      ) AS variants
-    FROM products p
-    LEFT JOIN product_variants v ON p.id = v.product_id
-    GROUP BY p.id
-  `;
+  const products = db.prepare("SELECT * FROM products").all();
 
-  const rows = db.prepare(sql).all();
-
-  rows.forEach(r => {
-    r.variants = JSON.parse(r.variants || "[]");
-    const total = r.variants.reduce((sum, v) => sum + (v.stock ?? 0), 0);
-    r.stock = total;
+  const result = products.map(p => {
+    const variants = db.prepare(`
+      SELECT id, title, price, stock, description
+      FROM product_variants
+      WHERE product_id = ?
+    `).all(p.id);
+    const totalStock = variants.reduce((sum, v) => sum + (v.stock ?? 0), 0);
+    return { ...p, stock: totalStock, variants };
   });
 
-  res.json(rows);
+  res.json(result);
 });
 
 // ✅ Ambil semua pesanan (PROTECTED)
