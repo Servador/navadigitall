@@ -32,20 +32,21 @@ if (!fs.existsSync(DB_FILE)) {
 
 const db = new Database(DB_FILE);
 console.log("✅ Database Connected:", DB_FILE);
-db.pragma("foreign_keys = ON");
-// === Cek dan tambahkan kolom "description" jika belum ada ===
+// ================================================
+// ✅ Pastikan kolom "description" ada di product_variants
+// ================================================
 try {
   const columns = db.prepare("PRAGMA table_info(product_variants)").all();
   const hasDescription = columns.some(c => c.name === "description");
   if (!hasDescription) {
-    console.log("🛠 Menambahkan kolom description ke product_variants...");
+    console.log("🛠 Menambahkan kolom 'description' ke product_variants...");
     db.prepare("ALTER TABLE product_variants ADD COLUMN description TEXT DEFAULT ''").run();
-    console.log("✅ Kolom description berhasil ditambahkan!");
+    console.log("✅ Kolom 'description' berhasil ditambahkan!");
   } else {
-    console.log("✅ Kolom description sudah ada.");
+    console.log("✅ Kolom 'description' sudah ada, skip alter table.");
   }
 } catch (err) {
-  console.error("❌ Error saat menambah kolom description:", err.message);
+  console.error("❌ Gagal memastikan kolom description:", err.message);
 }
 
 db.exec(`
