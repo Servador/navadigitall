@@ -958,48 +958,6 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* === FIX TEKS BIRU DI HP (Dark Theme) === */
-
-/* Bagian "Cara Order" & "Cek Pesanan" */
-details summary {
-  color: #fff !important;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none !important;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Hilangkan highlight biru pas ditekan */
-summary::-webkit-details-marker {
-  display: none;
-}
-
-/* Bagian Popup Produk (teks varian) */
-.modal, .popup, .product-modal, .product-popup {
-  color: #fff !important;
-}
-
-.modal b, .modal strong,
-.popup b, .popup strong {
-  color: #fff !important;
-}
-
-/* Tombol di popup */
-.modal button, .popup button {
-  color: #fff !important;
-}
-
-/* Tambahan safety untuk link */
-a, a:visited, a:hover, a:active {
-  color: #fff !important;
-  text-decoration: none !important;
-}
-
-/* Hilangkan efek biru saat tap di HP */
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
 /* === Banner Responsive Fix === */
 .banner {
   width: 100%;
@@ -1011,30 +969,3 @@ a, a:visited, a:hover, a:active {
   object-fit: contain; /* tampil penuh tanpa terpotong */
 }
 
-body {
-  background: #000 !important;
-  color: #fff !important;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.banner img {
-  width: 100%;
-  height: 150px;
-  object-fit: cover; /* ini yang motong */
-}
-.banner {
-  object-fit: contain;
-}
-
-/* === Banner Responsive Fix === */
-.banner img {
-  width: 100%;
-  max-width: 1200px;
-  height: auto !important;
-  border-radius: 12px;
-  display: block;
-  margin: 0 auto;
-  object-fit: contain !important; /* tampil utuh tanpa crop */
-}
