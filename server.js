@@ -393,14 +393,10 @@ app.put("/api/admin/variant/:id", verifyToken, (req, res) => {
   const { title, price, stock, description } = req.body;
   const variantId = req.params.id;
 
+  // ✅ Update semua kolom termasuk deskripsi (cukup 1x update)
   db.prepare(
     "UPDATE product_variants SET title=?, price=?, stock=?, description=? WHERE id=?"
   ).run(title, price, stock, description, variantId);
-
-  // Update varian
-  db.prepare(
-    "UPDATE product_variants SET title=?, price=?, stock=? WHERE id=?"
-  ).run(title, price, stock, variantId);
 
   // Ambil product_id terkait
   const row = db.prepare(
