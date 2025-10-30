@@ -233,16 +233,19 @@ async function loadProducts() {
     ];
 
     const variantsHTML = (p.variants || []).map(v => `
-      <div class="var-pill">
-        <span class="chip">#${v.id}</span>
-        <input class="input" id="vtitle-${v.id}" value="${v.title}">
-        <span class="muted" style="margin-left:auto">Rp</span>
-        <input class="input" id="vprice-${v.id}" type="number" value="${v.price}" style="max-width:80px">
-        <input class="input" id="vstock-${v.id}" type="number" value="${v.stock}" style="max-width:60px">
-        <button class="btn success tiny" onclick="saveVariantPrice(${v.id})">Save</button>
-        <button class="btn danger tiny" onclick="deleteVariant(${v.id})">×</button>
-      </div>
-    `).join("");
+  <div class="var-pill">
+    <span class="chip">#${v.id}</span>
+    <input class="input" id="vtitle-${v.id}" value="${v.title}">
+    <span class="muted" style="margin-left:auto">Rp</span>
+    <input class="input" id="vprice-${v.id}" type="number" value="${v.price}" style="max-width:80px">
+    <input class="input" id="vstock-${v.id}" type="number" value="${v.stock}" style="max-width:60px">
+    <input class="input" id="vdesc-${v.id}" placeholder="Deskripsi..." value="${v.description || ''}" style="width:100%;margin-top:6px">
+    <div class="inline">
+      <button class="btn success tiny" onclick="saveVariantPrice(${v.id})">Save</button>
+      <button class="btn danger tiny" onclick="deleteVariant(${v.id})">×</button>
+    </div>
+  </div>
+`).join("");
 
     tr.innerHTML = `
       <td><b>${p.id}</b></td>
@@ -286,19 +289,20 @@ async function saveVariantPrice(variantId) {
   const elPrice = document.getElementById(`vprice-${variantId}`);
   const elTitle = document.getElementById(`vtitle-${variantId}`);
   const elStock = document.getElementById(`vstock-${variantId}`);
+  const elDesc = document.getElementById(`vdesc-${variantId}`);
 
   const price = +elPrice.value || 0;
   const title = elTitle?.value?.trim() || '';
   const stock = +elStock?.value || 0;
+  const description = elDesc?.value?.trim() || '';
 
-  const res = await authFetch(`/api/admin/variant/${variantId}`, {
+  await authFetch(`/api/admin/variant/${variantId}`, {
     method: "PUT",
-    body: JSON.stringify({ title, price, stock })
+    body: JSON.stringify({ title, price, stock, description })
   });
 
-  // ✅ Setelah varian berubah → sync ulang stok produk
   await loadProducts();
-  toast("Stok varian diperbarui!");
+  toast("Varian diperbarui ✅");
 }
 
 // ✅ Hapus varian
