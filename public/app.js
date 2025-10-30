@@ -49,59 +49,69 @@ function openPackagePopup(product) {
   let selectedVariant = null;
 
   if (list.length > 0) {
-  list.forEach(pkg => {
-    const btn = document.createElement("button");
-    const stok = pkg.stock ?? 0;
+    list.forEach(pkg => {
+      const btn = document.createElement("button");
+      const stok = pkg.stock ?? 0;
 
-    btn.className = "pkg-btn";
-    btn.innerHTML = `
-  <div style="display:flex; justify-content:space-between;">
-    <span>${pkg.title}</span>
-    <span style="font-weight:bold;">Rp ${(+pkg.price).toLocaleString("id-ID")}</span>
-  </div>
-  <small style="color:#555;">📦 Stok: ${stok}</small>
-`;
+      btn.className = "pkg-btn";
+      btn.innerHTML = `
+        <div style="display:flex; justify-content:space-between;">
+          <span>${pkg.title}</span>
+          <span style="font-weight:bold;">Rp ${(+pkg.price).toLocaleString("id-ID")}</span>
+        </div>
+        <small style="color:#555;">📦 Stok: ${stok}</small>
+      `;
 
-    if (stok <= 0) {
-      btn.classList.add("disabled");
-      btn.style.opacity = 0.45;
-      btn.style.cursor = "not-allowed";
-      btn.onclick = () => alert("Stok habis! Silahkan pilih paket lain.");
-    } else {
-      btn.onclick = () => {
-        document.querySelectorAll(".pkg-btn").forEach(b =>
-          b.classList.remove("active")
-        );
-        btn.classList.add("active");
-        selectedVariant = pkg;
-      };
-    }
+      if (stok <= 0) {
+        btn.classList.add("disabled");
+        btn.style.opacity = 0.45;
+        btn.style.cursor = "not-allowed";
+        btn.onclick = () => alert("Stok habis! Silahkan pilih paket lain.");
+      } else {
+        btn.onclick = () => {
+          // reset tombol lain
+          document.querySelectorAll(".pkg-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          selectedVariant = pkg;
 
-    listContainer.appendChild(btn);
-  });
-} else {
-  listContainer.innerHTML = `
-    <p style="text-align:center; font-size:14px;">⚠ Belum ada paket tersedia.</p>
-  `;
-}
+          // hapus deskripsi lama
+          document.querySelectorAll(".desc-box").forEach(d => d.remove());
 
-// === Deskripsi Produk (auto scroll) ===
-if (product.description && product.description.trim() !== "") {
-  const descBox = document.createElement("div");
-  descBox.className = "product-desc";
-  descBox.innerHTML = `
-    <h4>📝 Deskripsi Produk</h4>
-    <p style="font-size:14px;line-height:1.5;color:#333;">${product.description}</p>
-  `;
-  listContainer.appendChild(descBox);
+          // tambahkan deskripsi baru di bawah varian yang diklik
+          const descBox = document.createElement("div");
+          descBox.className = "desc-box";
+          descBox.innerHTML = `
+            <div style="
+              margin-top:8px;
+              padding:10px;
+              border-radius:10px;
+              background:#f8f9fa;
+              border:1px solid #ddd;
+              text-align:left;">
+              <b>📜 Deskripsi Produk</b>
+              <p style="font-size:13px; margin-top:4px; color:#333;">
+                ${product.description || "Belum ada deskripsi untuk produk ini."}
+              </p>
+            </div>
+          `;
+          btn.insertAdjacentElement("afterend", descBox);
 
-  // scroll otomatis ke bawah setelah varian dipilih
-  setTimeout(() => {
-    descBox.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, 400);
-}
+          // scroll halus ke deskripsi
+          setTimeout(() => {
+            descBox.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 200);
+        };
+      }
 
-  // ✅ Tombol aksi
+      listContainer.appendChild(btn);
+    });
+  } else {
+    listContainer.innerHTML = `
+      <p style="text-align:center; font-size:14px;">⚠ Belum ada paket tersedia.</p>
+    `;
+  }
+
+  // tombol bawah
   const actionBox = document.createElement("div");
   actionBox.className = "popup-actions";
   actionBox.innerHTML = `
