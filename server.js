@@ -46,6 +46,28 @@ async function initDB() {
 }
 initDB();
 
+// ✅ Auto reseed bila produk kosong saat runtime (Vercel reset DB)
+app.get("/api/products", async (req, res) => {
+  let products = await db.all("SELECT * FROM products");
+  if (products.length === 0) {
+    console.log("⚠️ Database kosong, menjalankan seed ulang...");
+    await seedIfEmpty();
+    products = await db.all("SELECT * FROM products");
+  }
+
+  const result = [];
+  for (const p of products) {
+    const variants = await db.all(
+      "SELECT id, title, price, stock, description FROM product_variants WHERE product_id=?",
+      [p.id]
+    );
+    const totalStock = variants.reduce((sum, v) => sum + (v.stock ?? 0), 0);
+    result.push({ ...p, stock: totalStock, variants });
+  }
+
+  res.json(result);
+});
+
 // =========================================================
 // Buat tabel dari nol
 // =========================================================
