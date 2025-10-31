@@ -22,7 +22,14 @@ app.use(express.static(path.join(__dirname, "public")));
 const dbFolder = path.join(__dirname, "db");
 if (!fs.existsSync(dbFolder)) fs.mkdirSync(dbFolder);
 
-const DB_FILE = path.join(dbFolder, "nava.db");
+const isVercel = process.env.VERCEL === "1";
+const DB_FILE = isVercel ? ":memory:" : path.join(dbFolder, "nava.db");
+
+if (isVercel) {
+  console.log("⚙️ Vercel environment terdeteksi: menggunakan in-memory SQLite");
+} else {
+  console.log("✅ Menggunakan file DB lokal:", DB_FILE);
+}
 let db;
 
 // ✅ Inisialisasi DB
@@ -33,8 +40,9 @@ async function initDB() {
   });
   await db.exec("PRAGMA foreign_keys = ON;");
   console.log("✅ Database Connected:", DB_FILE);
+
   await createTables();
-  await seedIfEmpty();
+  await seedIfEmpty(); // ✅ tambahkan ini di sini
 }
 initDB();
 
