@@ -17,6 +17,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -24,8 +25,15 @@ app.use(express.static(path.join(__dirname, "public")));
 const dbFolder = path.join(__dirname, "db");
 if (!fs.existsSync(dbFolder)) fs.mkdirSync(dbFolder);
 
+// ✅ Deteksi apakah sedang dijalankan di Vercel
 const isVercel = process.env.VERCEL === "1";
 const DB_FILE = isVercel ? ":memory:" : path.join(dbFolder, "nava.db");
+
+if (isVercel) {
+  console.log("⚙️ Vercel environment terdeteksi: menggunakan in-memory SQLite");
+} else {
+  console.log("✅ Menggunakan file DB lokal:", DB_FILE);
+}
 
 let db;
 
@@ -156,13 +164,6 @@ app.post("/api/login", (req, res) => {
     return res.status(401).json({ error: "Email/Password salah" });
   const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "2h" });
   res.json({ token });
-});
-
-// DEBUG: Paksa reseed manual via URL (sementara untuk tes)
-app.get("/api/seed", async (req, res) => {
-  await seedIfEmpty();
-  const rows = await db.all("SELECT name FROM products");
-  res.json({ message: "✅ Reseed selesai", total: rows.length });
 });
 
 // ===============================
