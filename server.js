@@ -236,7 +236,13 @@ app.post("/api/login", (req, res) => {
 // API PRODUK DAN VARIAN
 // =========================================================
 app.get("/api/products", async (req, res) => {
-  const products = await db.all("SELECT * FROM products");
+  let products = await db.all("SELECT * FROM products");
+  if (products.length === 0) {
+    console.log("⚠️ Produk kosong, seeding ulang...");
+    await seedIfEmpty();
+    products = await db.all("SELECT * FROM products");
+  }
+
   const result = [];
   for (const p of products) {
     const variants = await db.all(
