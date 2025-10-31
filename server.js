@@ -158,6 +158,13 @@ app.post("/api/login", (req, res) => {
   res.json({ token });
 });
 
+// DEBUG: Paksa reseed manual via URL (sementara untuk tes)
+app.get("/api/seed", async (req, res) => {
+  await seedIfEmpty();
+  const rows = await db.all("SELECT name FROM products");
+  res.json({ message: "✅ Reseed selesai", total: rows.length });
+});
+
 // ===============================
 // Public API
 // ===============================
