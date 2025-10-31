@@ -1,5 +1,6 @@
 import express from "express";
-import Database from "better-sqlite3";
+import sqlite3 from "sqlite3";
+import { open } from "sqlite";
 import cors from "cors";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
@@ -8,10 +9,8 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import jwt from "jsonwebtoken";
 
-// Load ENV
 dotenv.config();
 
-// Fix dirname in ES Module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -20,73 +19,73 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// ✅ Auto create db folder & db file
 const dbFolder = path.join(__dirname, "db");
 if (!fs.existsSync(dbFolder)) fs.mkdirSync(dbFolder);
 
 const DB_FILE = path.join(dbFolder, "nava.db");
+let db;
 
-// 🧹 Hapus DB lama biar Railway bikin ulang
-try {
-  fs.unlinkSync(DB_FILE);
-  console.log("🧹 File nava.db dihapus agar dibuat ulang di Railway");
-} catch (e) {
-  console.log("⚠️ Tidak ada file nava.db untuk dihapus:", e.message);
+// ✅ Inisialisasi DB
+async function initDB() {
+  db = await open({
+    filename: DB_FILE,
+    driver: sqlite3.Database,
+  });
+  await db.exec("PRAGMA foreign_keys = ON;");
+  console.log("✅ Database Connected:", DB_FILE);
+  await createTables();
+  await seedIfEmpty();
+}
+initDB();
+
+// =========================================================
+// Buat tabel dari nol
+// =========================================================
+async function createTables() {
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS products (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT,
+      category TEXT,
+      image TEXT,
+      description TEXT DEFAULT '',
+      stock INTEGER DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS product_variants (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_id INTEGER,
+      title TEXT,
+      price INTEGER,
+      stock INTEGER DEFAULT 0,
+      description TEXT DEFAULT '',
+      FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS orders (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_id INTEGER,
+      variant_id INTEGER,
+      name TEXT,
+      contact TEXT,
+      method TEXT,
+      total INTEGER,
+      status TEXT DEFAULT 'pending',
+      createdAt TEXT
+    );
+  `);
 }
 
-// 🧱 Buat file DB baru
-console.log("📌 Membuat ulang SQLite DB file...");
-fs.writeFileSync(DB_FILE, "");
-
-const db = new Database(DB_FILE);
-console.log("✅ Database Connected:", DB_FILE);
-db.pragma("foreign_keys = ON");
-
 // =========================================================
-// 🧩 Buat tabel dari nol (langsung include kolom description)
+// SEED DATA AWAL
 // =========================================================
-db.exec(`
-CREATE TABLE IF NOT EXISTS products (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT,
-  category TEXT,
-  image TEXT,
-  description TEXT DEFAULT '',
-  stock INTEGER DEFAULT 0
-);
-
-CREATE TABLE IF NOT EXISTS product_variants (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  product_id INTEGER,
-  title TEXT,
-  price INTEGER,
-  stock INTEGER DEFAULT 0,
-  description TEXT DEFAULT '',
-  FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS orders (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  product_id INTEGER,
-  variant_id INTEGER,
-  name TEXT,
-  contact TEXT,
-  method TEXT,
-  total INTEGER,
-  status TEXT DEFAULT 'pending',
-  createdAt TEXT
-);
-`);
-
-// ✅ SEED KOMPLIT: jalan hanya saat DB masih kosong
-(function seedIfEmpty() {
-  const row = db.prepare("SELECT COUNT(*) AS c FROM products").get();
-  if (row.c > 0) return; // sudah ada data, jangan seed lagi
+async function seedIfEmpty() {
+  const row = await db.get("SELECT COUNT(*) AS c FROM products");
+  if (row.c > 0) return;
 
   console.log("⏳ Seeding full catalog...");
 
-  // 1) Definisi produk
-const products = [
+  const products = [
   // 🌟 BEST SELLER
   { name: "Netflix", category: "Streaming", image: "img/netflix.png" },
   { name: "Vidio", category: "Streaming", image: "img/vidio.png" },
@@ -173,43 +172,34 @@ const variants = {
   "Wink": [V("VIP 1 Bulan")],
 };
 
-  // 3) Insert dalam transaksi (cepat & atomic)
-  const insertProduct = db.prepare(
-    "INSERT INTO products (name, category, image, stock) VALUES (?,?,?,0)"
-  );
-  const insertVariant = db.prepare(
-    "INSERT INTO product_variants (product_id, title, price, stock) VALUES (?,?,?,?)"
-  );
-  const syncProduct = db.prepare(`
-    UPDATE products
-    SET stock = (
-      SELECT COALESCE(SUM(stock),0)
-      FROM product_variants
-      WHERE product_id = ?
-    )
-    WHERE id = ?
-  `);
+  for (const p of products) {
+    const result = await db.run(
+      "INSERT INTO products (name, category, image, stock) VALUES (?,?,?,0)",
+      [p.name, p.category, p.image]
+    );
+    const pid = result.lastID;
 
-  const tx = db.transaction(() => {
-    for (const p of products) {
-      const res = insertProduct.run(p.name, p.category, p.image);
-      const pid = res.lastInsertRowid;
-
-      // varian untuk produk tsb (jika tidak ada, biarkan kosong)
-      (variants[p.name] || []).forEach(v =>
-        insertVariant.run(pid, v.title, v.price, v.stock)
+    for (const v of variants[p.name] || []) {
+      await db.run(
+        "INSERT INTO product_variants (product_id, title, price, stock) VALUES (?,?,?,?)",
+        [pid, v.title, v.price, v.stock]
       );
-
-      // hitung & set total stok
-      syncProduct.run(pid, pid);
     }
-  });
 
-  tx();
+    await db.run(
+      `UPDATE products
+       SET stock = (SELECT COALESCE(SUM(stock),0) FROM product_variants WHERE product_id=?)
+       WHERE id=?`,
+      [pid, pid]
+    );
+  }
+
   console.log("✅ Seeding full catalog: DONE");
-})();
+}
 
-// ===== AUTH =====
+// =========================================================
+// AUTH
+// =========================================================
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@mail.com";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
@@ -217,7 +207,6 @@ const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
 function verifyToken(req, res, next) {
   const token = req.headers["authorization"]?.split(" ")[1];
   if (!token) return res.status(401).json({ error: "Unauthorized" });
-
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
@@ -229,193 +218,155 @@ function verifyToken(req, res, next) {
 
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
-  if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+  if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD)
     return res.status(401).json({ error: "Email/Password salah" });
-  }
   const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "2h" });
   res.json({ token });
 });
 
-// ✅ Get Products with Variants
-app.get("/api/products", (req, res) => {
-  const products = db.prepare("SELECT * FROM products").all();
-
-  const result = products.map(p => {
-    const variants = db.prepare(`
-      SELECT id, title, price, stock, description
-      FROM product_variants
-      WHERE product_id = ?
-    `).all(p.id);
+// =========================================================
+// API PRODUK DAN VARIAN
+// =========================================================
+app.get("/api/products", async (req, res) => {
+  const products = await db.all("SELECT * FROM products");
+  const result = [];
+  for (const p of products) {
+    const variants = await db.all(
+      "SELECT id, title, price, stock, description FROM product_variants WHERE product_id=?",
+      [p.id]
+    );
     const totalStock = variants.reduce((sum, v) => sum + (v.stock ?? 0), 0);
-    return { ...p, stock: totalStock, variants };
-  });
-
+    result.push({ ...p, stock: totalStock, variants });
+  }
   res.json(result);
 });
 
-// Replace endpoint POST /api/orders menjadi ini:
-app.post("/api/orders", (req, res) => {
+// =========================================================
+// API PESANAN
+// =========================================================
+app.post("/api/orders", async (req, res) => {
   const { product_id, variant_id, name, contact, method, total } = req.body;
   const createdAt = new Date().toISOString();
 
-  // Buat order
-  const q = db.prepare(`
-    INSERT INTO orders (product_id, variant_id, name, contact, method, total, createdAt)
-    VALUES (?,?,?,?,?,?,?)
-  `);
+  const result = await db.run(
+    `INSERT INTO orders (product_id, variant_id, name, contact, method, total, createdAt)
+     VALUES (?,?,?,?,?,?,?)`,
+    [product_id, variant_id, name, contact, method, total, createdAt]
+  );
 
-  const result = q.run(product_id, variant_id, name, contact, method, total, createdAt);
+  await db.run("UPDATE product_variants SET stock = stock - 1 WHERE id=?", [
+    variant_id,
+  ]);
+  await db.run(
+    `UPDATE products
+     SET stock = (SELECT COALESCE(SUM(stock),0) FROM product_variants WHERE product_id=?)
+     WHERE id=?`,
+    [product_id, product_id]
+  );
 
-  // Kurangi stok varian -1
-  db.prepare(`
-    UPDATE product_variants SET stock = stock - 1 WHERE id = ?
-  `).run(variant_id);
-
-  // Sync stok produk total
-  db.prepare(`
-    UPDATE products
-    SET stock = (
-      SELECT COALESCE(SUM(stock), 0)
-      FROM product_variants WHERE product_id = ?
-    )
-    WHERE id = ?
-  `).run(product_id, product_id);
-
-  res.json({ id: result.lastInsertRowid, stockAdjusted: true });
+  res.json({ id: result.lastID, stockAdjusted: true });
 });
 
-
-// ✅ GET DETAIL ORDER BY ID
-app.get("/api/orders/:id", (req, res) => {
-  const id = req.params.id;
-  const sql = `
-    SELECT o.*, 
-      p.name AS product_name,
-      v.title AS variant_title,
-      v.price AS variant_price
-    FROM orders o
-    LEFT JOIN products p ON o.product_id = p.id
-    LEFT JOIN product_variants v ON o.variant_id = v.id
-    WHERE o.id = ?
-  `;
-
-  const row = db.prepare(sql).get(id);
-
-  if (!row) {
-    return res.json({ error: "Order tidak ditemukan" });
-  }
-
+app.get("/api/orders/:id", async (req, res) => {
+  const row = await db.get(
+    `SELECT o.*, p.name AS product_name, v.title AS variant_title, v.price AS variant_price
+     FROM orders o
+     LEFT JOIN products p ON o.product_id = p.id
+     LEFT JOIN product_variants v ON o.variant_id = v.id
+     WHERE o.id=?`,
+    [req.params.id]
+  );
+  if (!row) return res.json({ error: "Order tidak ditemukan" });
   row.formattedId = "NV" + String(row.id).padStart(5, "0");
-
   res.json(row);
 });
 
-// ✅ Web UI Route
-app.get("/", (_, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-// ================= ADMIN API =================
-
-// ✅ Ambil semua produk + varian (PROTECTED)
-app.get("/api/admin/products", verifyToken, (req, res) => {
-  const products = db.prepare("SELECT * FROM products").all();
-
-  const result = products.map(p => {
-    const variants = db.prepare(`
-      SELECT id, title, price, stock, description
-      FROM product_variants
-      WHERE product_id = ?
-    `).all(p.id);
+// =========================================================
+// ADMIN API (PROTECTED)
+// =========================================================
+app.get("/api/admin/products", verifyToken, async (req, res) => {
+  const products = await db.all("SELECT * FROM products");
+  const result = [];
+  for (const p of products) {
+    const variants = await db.all(
+      "SELECT id, title, price, stock, description FROM product_variants WHERE product_id=?",
+      [p.id]
+    );
     const totalStock = variants.reduce((sum, v) => sum + (v.stock ?? 0), 0);
-    return { ...p, stock: totalStock, variants };
-  });
-
+    result.push({ ...p, stock: totalStock, variants });
+  }
   res.json(result);
 });
 
-// ✅ Ambil semua pesanan (PROTECTED)
-app.get("/api/admin/orders", verifyToken, (req, res) => {
-  const rows = db.prepare(`
-    SELECT o.*, p.name AS product_name, v.title AS variant_title
-    FROM orders o
-    LEFT JOIN products p ON p.id = o.product_id
-    LEFT JOIN product_variants v ON v.id = o.variant_id
-    ORDER BY o.id DESC
-  `).all();
+app.get("/api/admin/orders", verifyToken, async (req, res) => {
+  const rows = await db.all(
+    `SELECT o.*, p.name AS product_name, v.title AS variant_title
+     FROM orders o
+     LEFT JOIN products p ON p.id = o.product_id
+     LEFT JOIN product_variants v ON v.id = o.variant_id
+     ORDER BY o.id DESC`
+  );
   res.json(rows);
 });
 
-// ✅ Update Status Pesanan
-app.post("/api/admin/orders/:id/status", verifyToken, (req, res) => {
-  const { status } = req.body;
-  db.prepare("UPDATE orders SET status=? WHERE id=?")
-    .run(status, req.params.id);
+app.post("/api/admin/orders/:id/status", verifyToken, async (req, res) => {
+  await db.run("UPDATE orders SET status=? WHERE id=?", [
+    req.body.status,
+    req.params.id,
+  ]);
   res.json({ success: true });
 });
 
-// ✅ Update produk (pastikan sesuai)
-app.put("/api/admin/product/:id", verifyToken, (req, res) => {
+app.put("/api/admin/product/:id", verifyToken, async (req, res) => {
   const { name, category, image, stock, description } = req.body;
-  db.prepare(`
-    UPDATE products SET name=?, category=?, image=?, stock=?, description=?
-    WHERE id=?
-  `).run(name, category, image, stock, description, req.params.id);
+  await db.run(
+    "UPDATE products SET name=?, category=?, image=?, stock=?, description=? WHERE id=?",
+    [name, category, image, stock, description, req.params.id]
+  );
   res.json({ success: true });
 });
 
-// ✅ Tambah varian
-app.post("/api/admin/product/:id/variant", verifyToken, (req, res) => {
+app.post("/api/admin/product/:id/variant", verifyToken, async (req, res) => {
   const { title, price } = req.body;
-  db.prepare(`
-    INSERT INTO product_variants (product_id, title, price, stock)
-    VALUES (?,?,?,10)
-  `).run(req.params.id, title, price);
+  await db.run(
+    "INSERT INTO product_variants (product_id, title, price, stock) VALUES (?,?,?,10)",
+    [req.params.id, title, price]
+  );
   res.json({ success: true });
 });
 
-// ✅ Hapus varian
-app.delete("/api/admin/variant/:id", verifyToken, (req, res) => {
-  db.prepare("DELETE FROM product_variants WHERE id=?")
-    .run(req.params.id);
-  res.json({ success: true });
-});
-
-app.put("/api/admin/variant/:id", verifyToken, (req, res) => {
+app.put("/api/admin/variant/:id", verifyToken, async (req, res) => {
   const { title, price, stock, description } = req.body;
   const variantId = req.params.id;
-
-  // ✅ Update semua kolom termasuk deskripsi (cukup 1x update)
-  db.prepare(
-    "UPDATE product_variants SET title=?, price=?, stock=?, description=? WHERE id=?"
-  ).run(title, price, stock, description, variantId);
-
-  // Ambil product_id terkait
-  const row = db.prepare(
-    "SELECT product_id FROM product_variants WHERE id=?"
-  ).get(variantId);
-
+  await db.run(
+    "UPDATE product_variants SET title=?, price=?, stock=?, description=? WHERE id=?",
+    [title, price, stock, description, variantId]
+  );
+  const row = await db.get(
+    "SELECT product_id FROM product_variants WHERE id=?",
+    [variantId]
+  );
   if (row) {
-    // Sync ulang stok total produk
-    db.prepare(`
-      UPDATE products
-      SET stock = (
-        SELECT COALESCE(SUM(stock), 0)
-        FROM product_variants
-        WHERE product_id = ?
-      )
-      WHERE id = ?
-    `).run(row.product_id, row.product_id);
+    await db.run(
+      `UPDATE products
+       SET stock = (SELECT COALESCE(SUM(stock),0) FROM product_variants WHERE product_id=?)
+       WHERE id=?`,
+      [row.product_id, row.product_id]
+    );
   }
-
   res.json({ updated: true, stockSynced: true });
 });
 
-// ✅ Run Server
-// ✅ Serve Frontend Files
+app.delete("/api/admin/variant/:id", verifyToken, async (req, res) => {
+  await db.run("DELETE FROM product_variants WHERE id=?", [req.params.id]);
+  res.json({ success: true });
+});
+
+// =========================================================
+// FRONTEND & HTTPS REDIRECT
+// =========================================================
 app.use(express.static(path.join(__dirname, "public")));
 
-// Redirect www ke non-www
 app.use((req, res, next) => {
   if (req.headers.host && req.headers.host.startsWith("www.")) {
     return res.redirect(301, "https://" + req.headers.host.slice(4) + req.url);
@@ -430,8 +381,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// ✅ Redirect unknown routes ke index.html (untuk domain root)
-app.get("*", (req, res) => {
+app.get("*", (_, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
