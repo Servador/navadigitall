@@ -288,6 +288,28 @@ app.post("/api/orders", async (req, res) => {
   res.json({ id: result.lastID });
 });
 
+// ✅ Ambil detail 1 pesanan by ID
+app.get("/api/orders/:id", async (req, res) => {
+  try {
+    const order = await db.get(`
+      SELECT o.*, 
+             p.name AS product_name, 
+             v.title AS variant_title
+      FROM orders o
+      LEFT JOIN products p ON p.id = o.product_id
+      LEFT JOIN product_variants v ON v.id = o.variant_id
+      WHERE o.id = ?
+    `, [req.params.id]);
+
+    if (!order) return res.status(404).json({ error: "Order tidak ditemukan" });
+
+    res.json(order);
+  } catch (err) {
+    console.error("❌ Error GET /api/orders/:id", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 // ===============================
 // Admin API
 // ===============================
