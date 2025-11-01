@@ -107,19 +107,87 @@ async function seedIfEmpty() {
 
   console.log("⏳ Seeding products...");
 
+    // 🌟 BEST SELLER & STREAMING
   const products = [
     { name: "Netflix", category: "Streaming", image: "img/netflix.png" },
+    { name: "Vidio", category: "Streaming", image: "img/vidio.png" },
     { name: "Canva Pro", category: "Editing", image: "img/canva.png" },
     { name: "Spotify", category: "Streaming", image: "img/spotify.png" },
+    { name: "Disney", category: "Streaming", image: "img/disney.png" },
+    { name: "WeTV", category: "Streaming", image: "img/wetv.png" },
+    { name: "YouTube Premium", category: "Streaming", image: "img/yt.png" },
+    { name: "IQIYI", category: "Streaming", image: "img/iqiyi.png" },
+    { name: "Bstation", category: "Streaming", image: "img/bstation.jpeg" },
+    { name: "Loklok", category: "Streaming", image: "img/loklok.jpeg" },
+    { name: "Viu", category: "Streaming", image: "img/viu.png" },
+    { name: "DramaBox", category: "Streaming", image: "img/drama.png" },
+    { name: "Crunchyroll", category: "Streaming", image: "img/crunchyroll.png" },
+
+    // 🧠 AI & Tools
     { name: "ChatGPT", category: "AI Tools", image: "img/chatgpts.png" },
+    { name: "Gemini", category: "AI Tools", image: "img/gemini.png" },
+    { name: "Perplexity", category: "AI Tools", image: "img/perplexity.png" },
+    { name: "Remini", category: "AI Tools", image: "img/remini.png" },
+    { name: "Dazzcam", category: "AI Tools", image: "img/dazzcam.jpeg" },
+    { name: "PicsArt", category: "AI Tools", image: "img/picsart.jpeg" },
+    { name: "Alight Motion", category: "Editing", image: "img/am.jpeg" },
+    { name: "CapCut Pro", category: "Editing", image: "img/capcut.png" },
+    { name: "Blackbox", category: "AI Tools", image: "img/blackbox.jpeg" },
+
+    // 🌐 Layanan & Tools
+    { name: "Microsoft 365", category: "Productivity", image: "img/mcs.png" },
+    { name: "Zoom Pro", category: "Productivity", image: "img/zoom.png" },
+    { name: "GetContact", category: "Utility", image: "img/gtc.png" },
+    { name: "Jasa Pembuatan Website", category: "Utility", image: "img/website.jpeg" },
+    { name: "VPN Premium", category: "VPN", image: "img/vpn.png" },
+
+    // 💬 Sosmed & Komunitas
+    { name: "Instagram", category: "Sosmed", image: "img/ig.png" },
+    { name: "TikTok", category: "Sosmed", image: "img/tiktok.png" },
+    { name: "Wink", category: "Sosmed", image: "img/wink.png" },
   ];
 
+  // 2️⃣ Definisi varian (harga default 10000; stok 10)
   const V = (title, price = 10000, stock = 10) => ({ title, price, stock });
+
   const variants = {
-    "Netflix": [V("Private 1 Bulan"), V("Sharing 1 Bulan")],
+    // Best Seller & Streaming
+    "Netflix": [V("Private 1 Bulan"), V("Semi Private 1 Bulan"), V("Sharing 1 Bulan")],
+    "Vidio": [V("Private 1 Bulan"), V("Sharing 1 Bulan")],
     "Canva Pro": [V("1 Bulan"), V("6 Bulan")],
     "Spotify": [V("Private 1 Bulan"), V("Sharing 1 Bulan")],
+    "Disney": [V("Private 1 Bulan"), V("Sharing 1 Bulan")],
+    "WeTV": [V("Private 1 Bulan"), V("Sharing 1 Bulan")],
+    "YouTube Premium": [V("1 Bulan"), V("6 Bulan")],
+    "IQIYI": [V("Premium 1 Bulan")],
+    "Bstation": [V("Premium 1 Bulan")],
+    "Loklok": [V("VIP 1 Bulan")],
+    "Viu": [V("VIP 1 Bulan")],
+    "DramaBox": [V("VIP 1 Bulan")],
+    "Crunchyroll": [V("Premium 1 Bulan")],
+
+    // AI & Tools
     "ChatGPT": [V("Plus 1 Bulan")],
+    "Gemini": [V("Advanced 1 Bulan")],
+    "Perplexity": [V("Pro 1 Bulan")],
+    "Remini": [V("Premium 1 Bulan")],
+    "Dazzcam": [V("Pro 1 Bulan")],
+    "PicsArt": [V("Gold 1 Bulan")],
+    "Alight Motion": [V("Pro 1 Bulan")],
+    "Blackbox": [V("Developer Pro")],
+    "CapCut Pro": [V("1 Bulan"), V("6 Bulan")],
+
+    // Utility & Productivity
+    "Microsoft 365": [V("Personal 1 Bulan"), V("Family 1 Bulan")],
+    "Zoom Pro": [V("1 Bulan"), V("6 Bulan")],
+    "GetContact": [V("Premium 1 Bulan")],
+    "Jasa Pembuatan Website": [V("Landing Page"), V("E-Commerce"), V("Portfolio")],
+    "VPN Premium": [V("Premium 1 Bulan")],
+
+    // Sosmed
+    "Instagram": [V("1000 Followers"), V("5000 Followers"), V("10.000 Followers")],
+    "TikTok": [V("1000 Followers"), V("5000 Followers"), V("10.000 Followers")],
+    "Wink": [V("VIP 1 Bulan")],
   };
 
   for (const p of products) {
