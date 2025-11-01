@@ -24,10 +24,18 @@ app.use(express.static(path.join(__dirname, "public")));
 
 const dbFolder = path.join(__dirname, "db");
 if (!fs.existsSync(dbFolder)) fs.mkdirSync(dbFolder);
+if (isRailway && !fs.existsSync("/data")) fs.mkdirSync("/data");
 
-// ✅ Deteksi apakah sedang dijalankan di Vercel
+// ✅ Deteksi apakah di Vercel atau Railway
 const isVercel = process.env.VERCEL === "1";
-const DB_FILE = isVercel ? ":memory:" : path.join(dbFolder, "nava.db");
+const isRailway = !!process.env.RAILWAY_ENVIRONMENT_NAME;
+
+// ✅ Gunakan lokasi DB sesuai platform
+const DB_FILE = isVercel
+  ? ":memory:" // Vercel pakai in-memory
+  : isRailway
+  ? "/data/nava.db" // Railway simpan di folder /data (persistent)
+  : path.join(dbFolder, "nava.db"); // Lokal pakai folder db/
 
 if (isVercel) {
   console.log("⚙️ Vercel environment terdeteksi: menggunakan in-memory SQLite");
