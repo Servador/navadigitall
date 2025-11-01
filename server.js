@@ -22,13 +22,13 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-const dbFolder = path.join(__dirname, "db");
-if (!fs.existsSync(dbFolder)) fs.mkdirSync(dbFolder);
-if (isRailway && !fs.existsSync("/data")) fs.mkdirSync("/data");
-
 // ✅ Deteksi apakah di Vercel atau Railway
 const isVercel = process.env.VERCEL === "1";
 const isRailway = !!process.env.RAILWAY_ENVIRONMENT_NAME;
+
+const dbFolder = path.join(__dirname, "db");
+if (!fs.existsSync(dbFolder)) fs.mkdirSync(dbFolder);
+if (isRailway && !fs.existsSync("/data")) fs.mkdirSync("/data");
 
 // ✅ Gunakan lokasi DB sesuai platform
 const DB_FILE = isVercel
