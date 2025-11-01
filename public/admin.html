@@ -179,6 +179,9 @@
 </div>
 
 <script>
+// === KONFIG BACKEND ===
+const API_BASE = "https://navadigitall-production-8933.up.railway.app"; // ✅ URL backend kamu
+
 // ✅ Redirect jika tidak ada token
 const token = localStorage.getItem("adminToken");
 if (!token) {
@@ -194,8 +197,8 @@ async function authFetch(url, opts = {}) {
   };
   if (token) headers["Authorization"] = "Bearer " + token;
 
-  const res = await fetch(url, { ...opts, headers });
-  
+  const res = await fetch(`${API_BASE}${url}`, { ...opts, headers });
+
   if (res.status === 401 || res.status === 403) {
     localStorage.removeItem("adminToken");
     location.href = "login.html";
@@ -224,38 +227,30 @@ async function loadProducts() {
     option.textContent = `${p.id} — ${p.name}`;
     opt.appendChild(option);
 
-    const categories = [
-      "Pulsa",
-      "Game",
-      "Aplikasi Premium",
-      "Paket Data",
-      "Suntik Sosmed"
-    ];
-
     const variantsHTML = (p.variants || []).map(v => `
-  <div class="var-pill">
-    <span class="chip">#${v.id}</span>
-    <input class="input" id="vtitle-${v.id}" value="${v.title}">
-    <span class="muted" style="margin-left:auto">Rp</span>
-    <input class="input" id="vprice-${v.id}" type="number" value="${v.price}" style="max-width:80px">
-    <input class="input" id="vstock-${v.id}" type="number" value="${v.stock}" style="max-width:60px">
-    <input class="input" id="vdesc-${v.id}" placeholder="Deskripsi..." value="${v.description || ''}" style="width:100%;margin-top:6px">
-    <div class="inline">
-      <button class="btn success tiny" onclick="saveVariantPrice(${v.id})">Save</button>
-      <button class="btn danger tiny" onclick="deleteVariant(${v.id})">×</button>
-    </div>
-  </div>
-`).join("");
+      <div class="var-pill">
+        <span class="chip">#${v.id}</span>
+        <input class="input" id="vtitle-${v.id}" value="${v.title}">
+        <span class="muted" style="margin-left:auto">Rp</span>
+        <input class="input" id="vprice-${v.id}" type="number" value="${v.price}" style="max-width:80px">
+        <input class="input" id="vstock-${v.id}" type="number" value="${v.stock}" style="max-width:60px">
+        <input class="input" id="vdesc-${v.id}" placeholder="Deskripsi..." value="${v.description || ''}" style="width:100%;margin-top:6px">
+        <div class="inline">
+          <button class="btn success tiny" onclick="saveVariantPrice(${v.id})">Save</button>
+          <button class="btn danger tiny" onclick="deleteVariant(${v.id})">×</button>
+        </div>
+      </div>
+    `).join("");
 
     tr.innerHTML = `
       <td><b>${p.id}</b></td>
       <td>${p.name}</td>
       <td>
-        <<select class="select" id="cat-${p.id}">
-  ${["Streaming","Editing","AI Tools","Utility","Productivity","Sosmed","Game"].map(c =>
-    `<option value="${c}" ${p.category === c ? 'selected':''}>${c}</option>`
-  ).join("")}
-</select>
+        <select class="select" id="cat-${p.id}">
+          ${["Streaming","Editing","AI Tools","Utility","Productivity","Sosmed","Game"].map(c =>
+            `<option value="${c}" ${p.category === c ? 'selected':''}>${c}</option>`
+          ).join("")}
+        </select>
       </td>
       <td><b>${p.stock ?? 0}</b></td>
       <td>
@@ -264,41 +259,41 @@ async function loadProducts() {
           <div style="margin-top:8px">${variantsHTML}</div>
         </details>
       </td>
+      <td>
+        <div class="row-actions">
+          <button class="btn warn tiny"
+            onclick="openEditModal(this)"
+            data-id="${p.id}"
+            data-name="${escAttr(p.name)}"
+            data-category="${escAttr(p.category)}"
+            data-image="${escAttr(p.image)}"
+            data-stock="${p.stock ?? 0}"
+            data-description="${escAttr(p.description || '')}"
+          >Edit</button>
+        </div>
+      </td>
     `;
-    tr.innerHTML += `
-  <td>
-    <div class="row-actions">
-      <button class="btn warn tiny"
-        onclick="openEditModal(this)"
-        data-id="${p.id}"
-        data-name="${escAttr(p.name)}"
-        data-category="${escAttr(p.category)}"
-        data-image="${escAttr(p.image)}"
-        data-stock="${p.stock ?? 0}"
-        data-description="${escAttr(p.description || '')}"
-      >Edit</button>
-    </div>
-  </td>
-`;
     body.appendChild(tr);
   });
 }
 
-// ✅ Update varian (harga & stok)
+// ✅ Update varian
 async function saveVariantPrice(variantId) {
   const elPrice = document.getElementById(`vprice-${variantId}`);
   const elTitle = document.getElementById(`vtitle-${variantId}`);
   const elStock = document.getElementById(`vstock-${variantId}`);
   const elDesc = document.getElementById(`vdesc-${variantId}`);
 
-  const price = +elPrice.value || 0;
-  const title = elTitle?.value?.trim() || '';
-  const stock = +elStock?.value || 0;
-  const description = elDesc?.value?.trim() || '';
+  const payload = {
+    title: elTitle?.value?.trim() || '',
+    price: +elPrice.value || 0,
+    stock: +elStock?.value || 0,
+    description: elDesc?.value?.trim() || ''
+  };
 
   await authFetch(`/api/admin/variant/${variantId}`, {
     method: "PUT",
-    body: JSON.stringify({ title, price, stock, description })
+    body: JSON.stringify(payload)
   });
 
   await loadProducts();
