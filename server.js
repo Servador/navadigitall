@@ -121,7 +121,7 @@ async function seedIfEmpty() {
     { name: "Loklok", category: "Streaming", image: "img/loklok.jpeg" },
     { name: "Viu", category: "Streaming", image: "img/viu.png" },
     { name: "DramaBox", category: "Streaming", image: "img/drama.png" },
-    { name: "Crunchyroll", category: "Streaming", image: "img/crunchyroll.png" },
+    { name: "Crunchyroll", category: "Streaming", image: "img/crunchy.png" },
 
     // 🧠 AI & Tools
     { name: "ChatGPT", category: "AI Tools", image: "img/chatgpts.png" },
