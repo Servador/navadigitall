@@ -353,6 +353,62 @@ app.put("/api/admin/variant/:id", verifyToken, async (req, res) => {
   }
 });
 
+// ✅ Tambah varian baru
+app.post("/api/admin/product/:id/variant", verifyToken, async (req, res) => {
+  const { title, price } = req.body;
+  const productId = req.params.id;
+
+  if (!title || !price) {
+    return res.status(400).json({ error: "Judul dan harga wajib diisi" });
+  }
+
+  try {
+    const result = await db.run(
+      `INSERT INTO product_variants (product_id, title, price, stock) VALUES (?,?,?,0)`,
+      [productId, title, price]
+    );
+
+    // ✅ Update stok total di tabel produk
+    await db.run(`
+      UPDATE products 
+      SET stock = (SELECT COALESCE(SUM(stock),0) FROM product_variants WHERE product_id=?)
+      WHERE id=?`,
+      [productId, productId]
+    );
+
+    res.json({ id: result.lastID, success: true, message: "Varian ditambahkan ✅" });
+  } catch (err) {
+    console.error("❌ Gagal tambah varian:", err);
+    res.status(500).json({ error: "Gagal menambah varian" });
+  }
+});
+
+// ✅ Hapus varian berdasarkan ID
+app.delete("/api/admin/variant/:id", verifyToken, async (req, res) => {
+  const variantId = req.params.id;
+
+  try {
+    // Ambil product_id dulu biar bisa update stok total nanti
+    const variant = await db.get("SELECT product_id FROM product_variants WHERE id=?", [variantId]);
+    if (!variant) return res.status(404).json({ error: "Varian tidak ditemukan" });
+
+    await db.run("DELETE FROM product_variants WHERE id=?", [variantId]);
+
+    // ✅ Update stok produk agar konsisten
+    await db.run(`
+      UPDATE products 
+      SET stock = (SELECT COALESCE(SUM(stock),0) FROM product_variants WHERE product_id=?)
+      WHERE id=?`,
+      [variant.product_id, variant.product_id]
+    );
+
+    res.json({ success: true, message: "Varian dihapus ✅" });
+  } catch (err) {
+    console.error("❌ Gagal hapus varian:", err);
+    res.status(500).json({ error: "Gagal menghapus varian" });
+  }
+});
+
 // ===============================
 // HTTPS Redirect & Fallback
 // ===============================
