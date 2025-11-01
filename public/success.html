@@ -59,8 +59,10 @@
   </div>
 
   <script>
+const API_BASE = "https://navadigitall-production-8933.up.railway.app"; // ✅ backend kamu
+
 (async () => {
-  const orderId = localStorage.getItem("lastOrderId");
+  const orderId = localStorage.getItem("lastOrderId") || new URLSearchParams(location.search).get("id");
   const detailBox = document.getElementById("orderDetail");
   const waBtn = document.getElementById("waBtn");
 
@@ -71,10 +73,11 @@
   }
 
   try {
-    const res = await fetch("/api/orders/" + orderId);
+    // ✅ gunakan API_BASE
+    const res = await fetch(`${API_BASE}/api/orders/${orderId}`);
     const order = await res.json();
 
-    if (!order) {
+    if (!order || !order.id) {
       detailBox.innerHTML = `<p style="color:red;">⚠ Data pesanan tidak ditemukan!</p>`;
       waBtn.style.display = "none";
       return;
@@ -82,16 +85,16 @@
 
     const idFormatted = "NV" + String(order.id).padStart(5, "0");
 
-detailBox.innerHTML = `
-  <b>ID Pesanan:</b> <span style="color:#0084ff"><b>${idFormatted}</b></span><br>
-  <b>Produk:</b> ${order.product_name}<br>
-  <b>Paket:</b> ${order.variant_title}<br>
-  <b>Total Bayar:</b> Rp ${(order.total || 0).toLocaleString('id-ID')}<br>
-  <b>Waktu:</b> ${new Date(order.createdAt).toLocaleString('id-ID')}<br>
-  <b>Nama Pembeli:</b> ${order.name}<br>
-  <b>Nomor WA:</b> ${order.contact}<br>
-  <span style="font-size:12px;color:#888;">Gunakan ID ini untuk cek status pesanan</span>
-`;
+    detailBox.innerHTML = `
+      <b>ID Pesanan:</b> <span style="color:#0084ff"><b>${idFormatted}</b></span><br>
+      <b>Produk:</b> ${order.product_name}<br>
+      <b>Paket:</b> ${order.variant_title}<br>
+      <b>Total Bayar:</b> Rp ${(order.total || 0).toLocaleString('id-ID')}<br>
+      <b>Waktu:</b> ${new Date(order.createdAt).toLocaleString('id-ID')}<br>
+      <b>Nama Pembeli:</b> ${order.name}<br>
+      <b>Nomor WA:</b> ${order.contact}<br>
+      <span style="font-size:12px;color:#888;">Gunakan ID ini untuk cek status pesanan</span>
+    `;
 
     waBtn.onclick = () => {
       const pesan = encodeURIComponent(
@@ -101,7 +104,7 @@ detailBox.innerHTML = `
         `👤 Nama: ${order.name}\n` +
         `📱 WA: ${order.contact}\n\n` +
         `🕒 Waktu Pesanan: ${new Date(order.createdAt).toLocaleString('id-ID')}\n` +
-        `ID Order: ${order.id}`
+        `ID Order: ${idFormatted}`
       );
       window.location.href = `https://wa.me/6282129837460?text=${pesan}`;
     };
@@ -112,8 +115,7 @@ detailBox.innerHTML = `
     waBtn.style.display = "none";
   }
 })();
-</script>
-
+  </script>
 
 </body>
 </html>
