@@ -316,6 +316,21 @@ app.get("/api/admin/orders", verifyToken, async (req, res) => {
   res.json(rows);
 });
 
+// ✅ Update varian (judul, harga, stok, dan deskripsi)
+app.put("/api/admin/variant/:id", verifyToken, async (req, res) => {
+  const { title, price, stock, description } = req.body;
+  try {
+    await db.run(
+      "UPDATE product_variants SET title=?, price=?, stock=?, description=? WHERE id=?",
+      [title, price, stock, description ?? "", req.params.id]
+    );
+    res.json({ success: true, message: "Varian diperbarui ✅" });
+  } catch (err) {
+    console.error("❌ Gagal update varian:", err);
+    res.status(500).json({ error: "Gagal update varian" });
+  }
+});
+
 // ===============================
 // HTTPS Redirect & Fallback
 // ===============================
